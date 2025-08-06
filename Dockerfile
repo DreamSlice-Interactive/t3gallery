@@ -16,7 +16,7 @@ COPY package.json ./
 COPY pnpm-lock.yaml ./
 
 # Installiere die Produktionsabhängigkeiten mit pnpm
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Kopiere den Rest des Anwendungscodes
 COPY . .
@@ -37,6 +37,7 @@ FROM node:20-alpine
 
 # Setze das Arbeitsverzeichnis
 WORKDIR /app
+USER node
 
 # Kopiere die generierten Next.js-Assets und die node_modules aus dem Build-Stage
 COPY --from=builder /app/.next ./.next
