@@ -6,6 +6,8 @@ FROM node:20-alpine AS builder
 # Dieser Befehl muss vor allen 'pnpm'-spezifischen Befehlen stehen
 RUN npm install -g pnpm
 
+RUN apk add --no-cache build-base python3 make g++
+
 # Setze das Arbeitsverzeichnis im Container
 WORKDIR /app
 
