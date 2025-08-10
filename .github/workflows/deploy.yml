@@ -29,6 +29,8 @@ jobs:
                 context: .
                 push: true
                 tags: ${{ secrets.DOCKER_USERNAME }}/t3_tutorial:latest
+                build-args: |
+                    DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_BUILD }}
 
             - name: Notify Server for Deployment
               run: |

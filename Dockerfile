@@ -21,6 +21,9 @@ RUN pnpm install --frozen-lockfile
 # Kopiere den Rest des Anwendungscodes
 COPY . .
 
+ARG DATABASE_URL_BUILD
+ENV DATABASE_URL=${DATABASE_URL_BUILD}
+
 # Führe den Next.js Build aus
 # Wenn dein package.json Skript "build": "next build" ist und du pnpm nutzt.
 # Wenn du den Build mit pnpm ausführen willst:
