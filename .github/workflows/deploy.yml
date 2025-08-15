@@ -55,7 +55,7 @@ jobs:
           WEBHOOK_SERVER_URL: ${{ secrets.WEBHOOK_SERVER_URL }}
           WEBHOOK_SECRET: ${{ secrets.DEPLOYMENT_SECRET }}
         run: |
-          response=(curl -s -o /dev/null -w "%{http_code}" -X POST \
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             -H "X-Deployment-Secret: ${{ env.WEBHOOK_SECRET }}" \
             -d '{}' \
