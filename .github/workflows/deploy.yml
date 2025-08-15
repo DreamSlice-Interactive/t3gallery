@@ -55,8 +55,15 @@ jobs:
           WEBHOOK_SERVER_URL: ${{ secrets.WEBHOOK_SERVER_URL }}
           WEBHOOK_SECRET: ${{ secrets.DEPLOYMENT_SECRET }}
         run: |
-          curl -X POST \
+          response=(curl -s -o /dev/null -w "%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             -H "X-Deployment-Secret: ${{ env.WEBHOOK_SECRET }}" \
             -d '{}' \
-            ${{ env.WEBHOOK_SERVER_URL }}/deploy
+            ${{ env.WEBHOOK_SERVER_URL }}/deploy)
+
+            if [ "$response" -ne 200 ]; then
+              echo "❌ Deployment failed! HTTP status: $response"
+              exit 1
+            else
+              echo "✅ Deployment successful! HTTP status: $response"
+            fi
