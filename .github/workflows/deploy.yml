@@ -1,42 +1,51 @@
 # .github/workflows/deploy.yml
-name: Deploy Next.js App on Server
+name: Deploy to Server
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        steps:
-            - name: Checkout Code
-              uses: actions/checkout@v4
+      # Login to GitHub Container Registry (GHCR)
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-            - name: Log in to Docker Hub
-              uses: docker/login-action@v3
-              with:
-                username: ${{ secrets.DOCKER_USERNAME }}
-                password: ${{ secrets.DOCKER_PASSWORD }}
+      # Build Next.js Docker Image
+      - name: Build Docker image
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_BUILD }}
 
-            - name: Build and push Docker image
-              uses: docker/build-push-action@v5
-              with:
-                context: .
-                push: true
-                tags: ${{ secrets.DOCKER_USERNAME }}/t3_tutorial:latest
-                build-args: |
-                    DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_BUILD }}
-
-            - name: Notify Server for Deployment
-              run: |
-                curl -X POST -H "Content-Type: application/json" -H "X-Deployment-Secret: ${{ secrets.DEPLOYMENT_SECRET }}" \
-                http://91.107.217.2:8080/deploy
-              env:
-                DE_DEPLOYMENT_SECRET: ${{ secrets.DEPLOYMENT_SECRET }}
-
-
+      # Trigger Server Deployment
+      - name: Trigger Server Deployment
+        env:
+          WEBHOOK_SERVER_URL: ${{ secrets.WEBHOOK_SERVER_URL }}
+          WEBHOOK_SECRET: ${{ secrets.DEPLOYMENT_SECRET }}
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Deployment-Secret: ${{ env.WEBHOOK_SECRET }}" \
+            -d '{}' \
+            ${{ env.WEBHOOK_SERVER_URL }}/deploy
