@@ -9,6 +9,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      LOWERCASE_REPOSITORY: ${{ github.repository }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +33,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Convert repository name to lowercase
+        run: echo "LOWERCASE_REPOSITORY=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       # Build Next.js Docker Image
       - name: Build Docker image
         id: build-image
@@ -38,7 +43,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository | lowercase }}:latest
+          tags: ghcr.io/${{ env.LOWERCASE_REPOSITORY }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
